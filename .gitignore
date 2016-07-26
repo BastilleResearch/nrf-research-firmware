@@ -1,0 +1,4 @@
+bin/
+scratch/
+*.html
+*.pyc
