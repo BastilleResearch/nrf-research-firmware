@@ -187,9 +187,13 @@ class MSFHandler(BaseHTTPRequestHandler):
         global crc
         if crc:
             if repeat > 0:
-                transmit_payload(data, 4, repeat)
+                if radio.transmit_payload(data, 4, repeat):
+                    return { "success": True }
+                return { "success": False }
             else:
-                transmit_ack_payload(data)
+                if radio.transmit_ack_payload(data):
+                    return { "success": True }
+                return { "success": False }
         else:
             global address
             if address:
