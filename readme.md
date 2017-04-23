@@ -26,11 +26,17 @@ The following hardware has been tested and is known to work.
 - CrazyRadio PA USB dongle
 - SparkFun nRF24LU1+ breakout board
 - Logitech Unifying dongle (model C-U0007, Nordic Semiconductor based)
+- generic nrf24lu1p dongles from aliexpress (16k flash w/ Nordic bootloader)
 
 ## Build the firmware
 
 ```
 make
+```
+
+for 16k flash dongles:
+```
+make FLASH_SIZE=16
 ```
 
 ## Flash over USB
