@@ -1,8 +1,14 @@
 SDCC ?= sdcc
-CFLAGS = --model-large --std-c99
+FLASH_SIZE ?= 32
+ifeq ($(FLASH_SIZE), 16)
+    CFLAGS = --model-large --std-sdcc99 -DFLASH_SIZE_16K
+else
+    CFLAGS = --model-large --std-sdcc99
+endif
 LDFLAGS = --xram-loc 0x8000 --xram-size 2048 --model-large
 VPATH = src/
 OBJS = main.rel usb.rel usb_desc.rel radio.rel
+
 
 SDCC_VER := $(shell $(SDCC) -v | grep -Po "\d\.\d\.\d" | sed "s/\.//g")
 

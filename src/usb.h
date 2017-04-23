@@ -19,8 +19,14 @@
 #include "nRF24LU1P.h"
 #include "usb_desc.h"
 
+#ifdef  FLASH_SIZE_16K
+#define NORDIC_BOOTLOADER_START_ADDR  0x3800
+#else
+#define NORDIC_BOOTLOADER_START_ADDR  0x7800
+#endif
+
 // Nordic nootloader entry point
-static void (*nordic_bootloader)() = (void (*)())0x7800;
+static void (*nordic_bootloader)() = (void (*)()) NORDIC_BOOTLOADER_START_ADDR;
 
 // Logitech nootloader entry point
 static void (*logitech_bootloader)() = (void (*)())0x7400;
