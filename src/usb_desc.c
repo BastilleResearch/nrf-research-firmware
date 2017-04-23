@@ -47,7 +47,7 @@ __code const configuration_descriptor_t configuration_descriptor =
   .bConfigurationValue    = 1,     // Configuration identifer
   .iConfiguration         = 0,
   .bmAttributes           = 0x80,  // Bus powered
-  .bMaxPower              = 100,   // Max power of 100*2mA = 200mA 
+  .bMaxPower              = 50,   // Max power of 50*2mA = 100mA 
   .interface_descriptor = 
     {
       .bLength            = 9,    // Size of the interface descriptor 
