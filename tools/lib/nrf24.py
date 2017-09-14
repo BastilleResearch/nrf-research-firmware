@@ -70,6 +70,17 @@ class nrf24:
     except:
       raise Exception('Cannot find USB dongle.')
 
+  # Lists all compatiable USB devices
+  def supported_indexes(self):
+    dongles = list()
+    try:
+      dongles = list(usb.core.find(idVendor=0x1915, idProduct=0x0102, find_all=True))
+    except usb.core.USBError, ex:
+      raise ex
+    except:
+      raise Exception('Cannot find USB dongle.')
+    return range(0, len(dongles))
+
   # Put the radio in pseudo-promiscuous mode
   def enter_promiscuous_mode(self, prefix=[]):
     self.send_usb_command(ENTER_PROMISCUOUS_MODE, [len(prefix)]+map(ord, prefix))
