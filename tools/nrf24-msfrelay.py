@@ -185,13 +185,23 @@ class MSFHandler(BaseHTTPRequestHandler):
             offset = int(args["offset"][0])
         data = base64.urlsafe_b64decode(args["data"][0])
         global crc
+        global packets_sent
+        global last_sent
         if crc:
             if repeat > 0:
+                #debugstr = ':'.join('{:02X}'.format(x) for x in data)
+                #debugstr = ':'.join('{%02X' % x for x in data)
+                hex_chars = map(hex,map(ord,data))
+                print("DEBUG: ({0}) DATA={1}".format(time.time() - last_sent, hex_chars))
                 if radio.transmit_payload(data, 4, repeat):
+                    packets_sent += 1
+                    last_sent = time.time()
                     return { "success": True }
                 return { "success": False }
             else:
                 if radio.transmit_ack_payload(data):
+                    packets_sent += 1
+                    last_sent = time.time()
                     return { "success": True }
                 return { "success": False }
         else:
@@ -201,6 +211,8 @@ class MSFHandler(BaseHTTPRequestHandler):
                 radio.transmit_payload_generic(data, self.serialize_address(address))
             else:
                 radio.transmit_payload_generic(data)
+        packets_sent += 1
+        last_sent = time.time()
         return { "success": True } # Should do some checks here eventually
 
     def rfrecv(self, args):
