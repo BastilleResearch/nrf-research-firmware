@@ -22,7 +22,8 @@
 // Enter ESB promiscuous mode
 //   prefix:        address prefix; used for vendors with fixed start of address bytes
 //   prefix_length: prefix length, in bytes
-void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length);
+//   rate:          data rate (0=250K, 1=1M, 2=2M)
+void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length, uint8_t rate);
 
 // Enter generic promiscuous mode
 //   prefix:        address prefix; used for vendors with fixed start of address bytes

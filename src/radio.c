@@ -6,7 +6,7 @@
 #include "nRF24LU1P.h"
 
 // Enter ESB promiscuous mode
-void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length)
+void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length, uint8_t rate)
 {
   // Update the promiscuous mode state
   int x;
@@ -37,8 +37,13 @@ void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length)
   // Disable dynamic payload length and automatic ACK handling
   configure_mac(0, 0, ENAA_NONE);
 
-  // Disable CRC, enable RX, 2Mbps data rate, pm_payload_length byte payload width
-  configure_phy(PRIM_RX | PWR_UP, RATE_2M, pm_payload_length);
+  // Disable CRC, enable RX, specified data rate, pm_payload_length byte payload width
+  switch(rate)
+  {
+    case 0:  configure_phy(PRIM_RX | PWR_UP, RF_PWR_4 | RATE_250K, pm_payload_length); break;
+    case 1:  configure_phy(PRIM_RX | PWR_UP, RF_PWR_4 | RATE_1M, pm_payload_length); break;
+    default: configure_phy(PRIM_RX | PWR_UP, RF_PWR_4 | RATE_2M, pm_payload_length); break;
+  }
 
   // CE high
   rfce = 1;
@@ -227,7 +232,7 @@ void handle_radio_request(uint8_t request, uint8_t * data)
   // Enter ESB promiscuous mode
   else if(request == ENTER_PROMISCUOUS_MODE)
   {
-    enter_promiscuous_mode(&data[1] /* address prefix */, data[0] /* prefix length */);
+    enter_promiscuous_mode(&data[2] /* address prefix */, data[1] /* prefix length */, data[0] /* rate */);
   }
 
   // Enter generic promiscuous mode
@@ -372,20 +377,25 @@ void handle_radio_request(uint8_t request, uint8_t * data)
     radio_mode = sniffer;
 
     // Clamp to 2-5 byte addresses
-    if(data[0] > 5) data[0] = 5;
-    if(data[0] < 2) data[0] = 2;
+    if(data[1] > 5) data[1] = 5;
+    if(data[1] < 2) data[1] = 2;
 
     // CE low
     rfce = 0;
 
     // Configure the address
-    configure_address(&data[1], data[0]);
+    configure_address(&data[2], data[1]);
 
     // Enable dynamic payload length, disable automatic ACK handling
     configure_mac(EN_DPL | EN_ACK_PAY, DPL_P0, ENAA_NONE);
 
-    // 2Mbps data rate, enable RX, 16-bit CRC
-    configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP, RATE_2M, 0);
+    // Specified data rate, enable RX, 16-bit CRC
+    switch(data[0])
+    {
+      case 0:  configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP, RF_PWR_4 | RATE_250K, 0); break;
+      case 1:  configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP, RF_PWR_4 | RATE_1M, 0); break;
+      default: configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP, RF_PWR_4 | RATE_2M, 0); break;
+    }
 
     // CE high
     rfce = 1;
