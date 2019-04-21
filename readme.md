@@ -1,203 +1,126 @@
-# RFStorm nRF24LU1+ Research Firmware
+## Presentation Clickers
 
-Firmware and research tools for Nordic Semiconductor nRF24LU1+ based USB dongles and breakout boards.
+I was in the mood for some RF reverse-engineering, so I ordered a few presentation clickers and had a bit of fun. 
 
-## Requirements
+This is a fork of [nrf-research-firmware](readme-original.md) (which I wrote a few years ago Bastille). I've added support for a few new transceivers/protocols, and included keystroke injection POCs for 10 common presentation clickers.
 
-- SDCC (minimum version 3.1.0)
-- GNU Binutils
-- Python
-- PyUSB
-- platformio
+## History
 
-Install dependencies on Ubuntu:
+- 2019-04-20 - released first batch
 
-```
-sudo apt-get install sdcc binutils python python-pip
-sudo pip install -U pip
-sudo pip install -U -I pyusb
-sudo pip install -U platformio
-```
 
-## Supported Hardware
+## Devices Vulnerable to Keystroke Injection
 
-The following hardware has been tested and is known to work.
+| Vendor | Model | Protocol | RFIC | Added |
+|------- | ----- | -------- | ---- | ----- |
+| AmazonBasics | [P-001](https://www.amazon.com/AmazonBasics-P-001-Wireless-Presenter/dp/B01FV0FAL2/) | [AmazonBasics P-001](#AmazonBasics-P-001) | nRF24 | 2019-04-20
+| Canon | [PR100-R](https://www.amazon.com/gp/product/B01CEAYTGE/) | [Canon PR100-R](#Canon-PR100-R) | PL1167 | 2019-04-20 |
+| Funpick | [Wireless Presenter](https://www.amazon.com/Funpick-Presenter-PowerPoint-Presentation-Red（Power＜1mW）/dp/B07L4K79HN/) | [HS304](#HS304) | HS304 | 2019-04-20 |
+| AMERTEER | [Wireless Presenter](https://www.amazon.com/AMERTEER-Wireless-Presenter-Controller-Presentation/dp/B06XDD3KM3/) | [HS304](#HS304) | HS304 | 2019-04-20 |
+| BEBONCOOL | [D100](https://www.amazon.com/BEBONCOOL-Wireless-Presenter-Presentation-PowerPoint/dp/B00WQFFZ9I/) | [HS304](#HS304) | HS304 | 2019-04-20 |
+| ESYWEN | [Wireless Presenter](https://www.amazon.com/Wireless-Presenter-ESYWEN-Presentation-PowerPoint/dp/B07D7X7X2M/) | [HS304](#HS304) | HS304 | 2019-04-20 |
+| Red Star Tech | [PR-819](https://www.amazon.com/Red-Star-Tec-Presentation-PR-819/dp/B015J5KB3G/) | [HS304](#HS304) | HS304 | 2019-04-20 |
+| DinoFire | [D06-DF-US](https://www.amazon.com/DinoFire-Presenter-Hyperlink-PowerPoint-Presentation/dp/B01410YNAM/) | [HS304](#HS304) | HS304 | 2019-04-20 |
 
-- CrazyRadio PA USB dongle
-- SparkFun nRF24LU1+ breakout board
-- Logitech Unifying dongle (model C-U0007, Nordic Semiconductor based)
+## Protocols
 
-## Build the firmware
+### AmazonBasics P-001
 
-```
-make
-```
+#### Overview
 
-## Flash over USB
+This is almost certainly a generic protocol, but I haven't looked at any of the sister devices yet (i.e. [this one](https://www.amazon.com/gp/product/B07D75459D/)). For the moment I am categorizing this as a distinct protocol, but that will likely change once I test the sister device(s).
 
-nRF24LU1+ chips come with a factory programmed bootloader occupying the topmost 2KB of flash memory. The CrazyRadio firmware and RFStorm research firmware support USB commands to enter the Nordic bootloader.
+The P-001 is based on the nRF24 RFIC family, and is functionally an unencrypted wireless keyboard, vulnerable to keystroke injection. 
 
-Dongles and breakout boards can be programmed over USB if they are running one of the following firmwares:
+#### PHY
 
-- Nordic Semiconductor Bootloader
-- CrazyRadio Firmware
-- RFStorm Research Firmware
+The P-001 uses 2Mb/s nRF24 Enhanced Shockburst with 5-byte addresses, and channels 2402-2476.
 
-To flash the firmware over USB:
+#### Device Discovery
+
+You can find the address of your P-001 using `nrf24-scanner.py`.
+
+Pressing the right arrow should generate packets looking something like this:
 
 ```
-sudo make install
+[2019-04-20 12:59:13.908]  27   9  44:CB:66:A3:BE  00:00:00:00:00:00:00:00:01
+[2019-04-20 12:59:13.909]  27   9  44:CB:66:A3:BE  00:00:00:00:00:00:00:00:01
+[2019-04-20 12:59:13.999]  27   9  44:CB:66:A3:BE  00:00:4E:00:00:00:00:00:01
+[2019-04-20 12:59:14.120]  27   9  44:CB:66:A3:BE  00:00:00:00:00:00:00:00:01
+[2019-04-20 12:59:14.121]  27   9  44:CB:66:A3:BE  00:00:00:00:00:00:00:00:01
+[2019-04-20 12:59:14.211]  27   9  44:CB:66:A3:BE  00:00:4E:00:00:00:00:00:01
 ```
 
-## Flash a Logitech Unifying dongle
+#### Injection
 
-*The most common Unifying dongles are based on the nRF24LU1+, but some use chips from Texas Instruments.
-This firmware is only supported on the nRF24LU1+ variants, which have a model number of C-U0007. The flashing
-script will automatically detect which type of dongle is plugged in, and will only attempt to flash the nRF24LU1+ variants.*
+Inject the test keystroke sequence into a specific AmazonBasics P-001 dongle (address `44:CB:66:A3:BE`):
 
-To flash the firmware over USB onto a Logitech Unifying dongle:
-
-```
-sudo make logitech_install
-```
-
-## Flash a Logitech Unifying dongle back to the original firmware
-
-Download and extract the Logitech firmware image, which will be named `RQR_012_005_00028.hex` or similar. Then, run the following command to flash the Logitech firmware onto the dongle:
-
-```
-sudo ./prog/usb-flasher/logitech-usb-restore.py [path-to-firmware.hex]
-```
-
-## Flash over SPI using a Teensy
-
-If your dongle or breakout board is bricked, you can alternatively program it over SPI using a Teensy.
-
-This has only been tested with a Teensy 3.1/3.2, but is likely to work with other Arduino variants as well.
-
-### Build and Upload the Teensy Flasher
-
-```
-platformio run --project-dir teensy-flasher --target upload
-```
-
-### Connect the Teensy to the nRF24LU1+
-
-| Teensy | CrazyRadio PA | Sparkfun nRF24LU1+ Breakout |
-| ------ | ---------- | -------- |
-| GND | 9 | GND |
-| 8 | 3 | RESET |
-| 9 | 2 | PROG |
-| 10 | 10 | P0.3 |
-| 11 | 6 | P0.1 |
-| 12 | 8 | P0.2 |
-| 13 | 4 | P0.0 |
-| 3.3V | 5 | VIN |
-
-### Flash the nRF24LU1+
-
-```
-sudo make spi_install
-```
-
-# Python Scripts
-
-## scanner
-
-Pseudo-promiscuous mode device discovery tool, which sweeps a list of channels and prints out decoded Enhanced Shockburst packets.
-
-```
-usage: ./nrf24-scanner.py [-h] [-c N [N ...]] [-v] [-l] [-p PREFIX] [-d DWELL]
-
-optional arguments:
-  -h, --help                          show this help message and exit
-  -c N [N ...], --channels N [N ...]  RF channels
-  -v, --verbose                       Enable verbose output
-  -l, --lna                           Enable the LNA (for CrazyRadio PA dongles)
-  -p PREFIX, --prefix PREFIX          Promiscuous mode address prefix
-  -d DWELL, --dwell DWELL             Dwell time per channel, in milliseconds
-```
-
-Scan for devices on channels 1-5
-
-```
-./nrf24-scanner.py -c {1..5}
-```
-
-Scan for devices with an address starting in 0xA9 on all channels
-
-```
-./nrf24-scanner.py -p A9
-```
+```sudo ./tools/protocol-injector.py -l -f amazon -a 44:CB:66:A3:BE```
 
 
-## sniffer
+### Canon PR100-R
 
-Device following sniffer, which follows a specific nRF24 device as it hops, and prints out decoded Enhanced Shockburst packets from the device.
+#### Overview
 
-```
-usage: ./nrf24-sniffer.py [-h] [-c N [N ...]] [-v] [-l] -a ADDRESS [-t TIMEOUT] [-k ACK_TIMEOUT] [-r RETRIES]
+I'm not sure if this protocol is unique to the Canon PR100-R, but since it's the only device I've observed that speaks the protocol, I'm leaving it in its own bucket until the data suggests otherwise.
 
-optional arguments:
-  -h, --help                                 show this help message and exit
-  -c N [N ...], --channels N [N ...]         RF channels
-  -v, --verbose                              Enable verbose output
-  -l, --lna                                  Enable the LNA (for CrazyRadio PA dongles)
-  -a ADDRESS, --address ADDRESS              Address to sniff, following as it changes channels
-  -t TIMEOUT, --timeout TIMEOUT              Channel timeout, in milliseconds
-  -k ACK_TIMEOUT, --ack_timeout ACK_TIMEOUT  ACK timeout in microseconds, accepts [250,4000], step 250
-  -r RETRIES, --retries RETRIES              Auto retry limit, accepts [0,15]
-```
+The PR100-R is based on the PL1167 RFIC, and an unknown MCU.
 
-Sniff packets from address 61:49:66:82:03 on all channels
+The PR100-R is functionally an unencrypted wireless keyboard, vulnerable to keystroke injection.
 
-```
-./nrf24-sniffer.py -a 61:49:66:82:03
-```
+#### PHY
 
-## network mapper
+The PR100-R uses a 1Mb/s FSK protocol operating on 5Mhz-spaced channels between 2406 Mhz and 2481 MHz.
 
-Star network mapper, which attempts to discover the active addresses in a star network by changing the last byte in the given address, and pinging each of 256 possible addresses on each channel in the channel list.
+Packets are whitened, and protected by a 16-bit CRC. 
 
-```
-usage: ./nrf24-network-mapper.py [-h] [-c N [N ...]] [-v] [-l] -a ADDRESS [-p PASSES] [-k ACK_TIMEOUT] [-r RETRIES]
+There don't appear to be ACKs sent back from the dongle, with the caveat that I've only reversed this protocol sufficient to demonstrate keystroke injection.
 
-optional arguments:
-  -h, --help                                 show this help message and exit
-  -c N [N ...], --channels N [N ...]         RF channels
-  -v, --verbose                              Enable verbose output
-  -l, --lna                                  Enable the LNA (for CrazyRadio PA dongles)
-  -a ADDRESS, --address ADDRESS              Known address
-  -p PASSES, --passes PASSES                 Number of passes (default 2)
-  -k ACK_TIMEOUT, --ack_timeout ACK_TIMEOUT  ACK timeout in microseconds, accepts [250,4000], step 250
-  -r RETRIES, --retries RETRIES              Auto retry limit, accepts [0,15]
-```
+The protocol appears to take a frequency-agility approach to channel selection, and the dongle settles on a channel after the remote has transmitted on it for some number of packets. In practice, it is sufficient to transmit a few seconds of dummy packets before transmitting the keystroke packets.
 
-Map the star network that address 61:49:66:82:03 belongs to
+#### Addressing
 
-```
-./nrf24-network-mapper.py -a 61:49:66:82:03
-```
+Based on the packet format, it's unclear if this protocol uses a fixed sync word, or a per-device address. I only looked at a single unit (due to the high price-point), so I wasn't able to fully vet the packet format.
 
-## continuous tone test
+The injection script works against my PR100-R, but may need to be modified for general use. **If you have another PR100-R and are able to validate this, please let me know!**
 
-The nRF24LU1+ chips include a test mechanism to transmit a continuous tone, the frequency of which can be verified if you have access to an SDR. There is the potential for frequency offsets between devices to cause unexpected behavior. For instance, one of the SparkFun breakout boards that was tested had a frequency offset of ~300kHz, which caused it to receive packets on two adjacent channels.
+#### Injection
 
-This script will cause the transceiver to transmit a tone on the first channel that is passed in.
+Inject the test keystroke sequence into a nearby Canon PR100-R dongle:
 
-```
-usage: ./nrf24-continuous-tone-test.py [-h] [-c N [N ...]] [-v] [-l]
+```sudo ./tools/protocol-injector.py -l -f canon```
 
-optional arguments:
-  -h, --help                          show this help message and exit
-  -c N [N ...], --channels N [N ...]  RF channels
-  -v, --verbose                       Enable verbose output
-  -l, --lna                           Enable the LNA (for CrazyRadio PA dongles)
 
-```
+### HS304
 
-Transmit a continuous tone at 2405MHz
+#### Overview
 
-```
-./nrf24-continuous-tone-test.py -c 5
-```
+HS304 appears to be an application-specific RFIC for presentation clickers (or maybe wireless keyboards/mice). The name comes from the USB device string *HAS HS304*, and was the same for all devices in this set.
+
+The RFIC was observed to be an unmarked SOP-16 package, with no apparent differences between vendors.
+
+HS304-based devices are functionally unencrypted wireless keyboards, vulnerable to keystroke injection.
+
+#### PHY
+
+HS304 is a 1Mb/s FSK protocol operating on three channels in the 2.4GHz ISM band (2407, 2433, 2463). There don't appear to be ACKs sent from the dongle back to the presentation clicker, and packet delivery is ensured by transmitting each packet on each of the three channels.
+
+In practice, reliable packet delivery can also be achieved by transmitting each packet multiple times on a single channel.
+
+Packets are whitened, and protected by a 16-bit CRC. 
+
+#### Addressing
+
+There is no addressing or pairing scheme, so keystroke injection does not require device-discovery, however the lack of ACKs precludes active discovery of dongles.
+
+#### Injection
+
+Inject the test keystroke sequence into nearby HS304 dongles:
+
+```sudo ./tools/protocol-injector.py -l -f hs304```
+
+#### Sniffing
+
+Receive and decode packets sent from nearby NS304 presentation clickers:
+
+```sudo ./tools/protocol-scanner.py -l -f hs304```
