@@ -2,7 +2,7 @@
 
 I was in the mood for some RF reverse-engineering, so I ordered a few presentation clickers and had a bit of fun. 
 
-This is a fork of [nrf-research-firmware](readme-original.md) (which I wrote a few years ago Bastille). I've added support for a few new transceivers/protocols, and included keystroke injection POCs for 10 common presentation clickers.
+This is a fork of [nrf-research-firmware](readme-original.md) (which I wrote a few years ago at Bastille). I've added support for a few new transceivers/protocols, and included keystroke injection POCs for 10 common presentation clickers.
 
 ## History
 
@@ -55,7 +55,7 @@ Pressing the right arrow should generate packets looking something like this:
 
 Inject the test keystroke sequence into a specific AmazonBasics P-001 dongle (address `44:CB:66:A3:BE`):
 
-```sudo ./tools/protocol-injector.py -l -f amazon -a 44:CB:66:A3:BE```
+```sudo ./tools/preso-injector.py -l -f amazon -a 44:CB:66:A3:BE```
 
 
 ### Canon PR100-R
@@ -88,7 +88,7 @@ The injection script works against my PR100-R, but may need to be modified for g
 
 Inject the test keystroke sequence into a nearby Canon PR100-R dongle:
 
-```sudo ./tools/protocol-injector.py -l -f canon```
+```sudo ./tools/preso-injector.py -l -f canon```
 
 
 ### HS304
@@ -117,10 +117,10 @@ There is no addressing or pairing scheme, so keystroke injection does not requir
 
 Inject the test keystroke sequence into nearby HS304 dongles:
 
-```sudo ./tools/protocol-injector.py -l -f hs304```
+```sudo ./tools/preso-injector.py -l -f hs304```
 
 #### Sniffing
 
 Receive and decode packets sent from nearby NS304 presentation clickers:
 
-```sudo ./tools/protocol-scanner.py -l -f hs304```
+```sudo ./tools/preso-scanner.py -l -f hs304```
