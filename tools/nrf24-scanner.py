@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
   Copyright (C) 2016 Bastille Networks
 
@@ -17,7 +17,7 @@
 '''
 
 
-import time, logging
+import codecs, time, logging
 from lib import common
 
 # Parse command line arguments and initialize the radio
@@ -27,7 +27,7 @@ common.parser.add_argument('-d', '--dwell', type=float, help='Dwell time per cha
 common.parse_and_init()
 
 # Parse the prefix addresses
-prefix_address = common.args.prefix.replace(':', '').decode('hex')
+prefix_address = codecs.decode(common.args.prefix.replace(':', ''), 'hex')
 if len(prefix_address) > 5:
   raise Exception('Invalid prefix address: {0}'.format(args.address))
 

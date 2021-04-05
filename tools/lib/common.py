@@ -17,7 +17,7 @@
 
 
 import logging, argparse
-from nrf24 import *
+from .nrf24 import *
 
 channels = []
 args = None
@@ -30,7 +30,7 @@ def init_args(description):
   global parser
   parser = argparse.ArgumentParser(description,
     formatter_class=lambda prog: argparse.HelpFormatter(prog,max_help_position=50,width=120))
-  parser.add_argument('-c', '--channels', type=int, nargs='+', help='RF channels', default=range(2, 84), metavar='N')
+  parser.add_argument('-c', '--channels', type=int, nargs='+', help='RF channels', default=list(range(2, 84)), metavar='N')
   parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output', default=False)
   parser.add_argument('-l', '--lna', action='store_true', help='Enable the LNA (for CrazyRadio PA dongles)', default=False)
   parser.add_argument('-i', '--index', type=int, help='Dongle index', default=0)
