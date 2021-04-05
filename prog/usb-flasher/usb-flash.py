@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
   Copyright (C) 2016 Bastille Networks
 
@@ -25,8 +25,8 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s.%(msecs)03d]  %(mes
 # Check pyusb dependency
 try:
   from usb import core as _usb_core
-except ImportError, ex:
-  print '''
+except ImportError as ex:
+  print('''
 ------------------------------------------
 | PyUSB was not found or is out of date. |
 ------------------------------------------
@@ -34,7 +34,7 @@ except ImportError, ex:
 Please update PyUSB using pip:
 
 sudo pip install -U -I pip && sudo pip install -U -I pyusb
-'''
+''')
   sys.exit(1)
 
 # USB timeout sufficiently long for operating in a VM
@@ -42,7 +42,7 @@ usb_timeout = 2500
 
 # Verify that we received a command line argument
 if len(sys.argv) < 2:
-  print 'Usage: ./usb-flash.py path-to-firmware.bin'
+  print('Usage: ./usb-flash.py path-to-firmware.bin')
   quit()
 
 # Read in the firmware
@@ -50,7 +50,7 @@ with open(sys.argv[1], 'rb') as f:
   data = f.read()
 
 # Zero pad the data to a multiple of 512 bytes
-data += '\000' * (512 - len(data) % 512)
+data += b'\000' * (512 - len(data) % 512)
 
 # Find an attached device running CrazyRadio or RFStorm firmware
 logging.info("Looking for a compatible device that can jump to the Nordic bootloader")
@@ -93,7 +93,7 @@ if not dongle:
 
 # Write the data, one page at a time
 logging.info("Writing image to flash")
-page_count = len(data) / 512
+page_count = len(data) // 512
 for page in range(page_count):
 
   # Tell the bootloader that we are going to write a page
@@ -122,8 +122,8 @@ for page in range(page_count):
 
     # Read the block
     dongle.write(0x01, [0x03, block_number], usb_timeout)
-    block_read = array.array('B', dongle.read(0x81, 64, usb_timeout)).tostring()
-    if block_read != data[block_number*64:block_number*64+64]:
+    block_read = dongle.read(0x81, 64, usb_timeout)
+    if block_read != array.array('B', data[block_number*64:block_number*64+64]):
       raise Exception('Verification failed on page {0}, block {1}'.format(page, block))
     block_number += 1
 
