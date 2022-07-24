@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 '''
   Copyright (C) 2016 Bastille Networks
 
@@ -24,7 +24,7 @@ from lib import common
 common.init_args('./nrf24-network-mapper.py')
 common.parser.add_argument('-a', '--address', type=str, help='Known address', required=True)
 common.parser.add_argument('-k', '--ack_timeout', type=int, help='ACK timeout in microseconds, accepts [250,4000], step 250', default=500)
-common.parser.add_argument('-r', '--retries', type=int, help='Auto retry limit, accepts [0,15]', default='5', choices=xrange(0, 16), metavar='RETRIES')
+common.parser.add_argument('-r', '--retries', type=int, help='Auto retry limit, accepts [0,15]', default='5', choices=range(0, 16), metavar='RETRIES')
 common.parser.add_argument('-p', '--ping_payload', type=str, help='Ping payload, ex 0F:0F:0F:0F', default='0F:0F:0F:0F', metavar='PING_PAYLOAD')
 common.parse_and_init()
 

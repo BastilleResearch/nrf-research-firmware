@@ -17,7 +17,7 @@
 
 
 import logging, argparse
-from nrf24 import *
+from lib.nrf24 import *
 
 channels = []
 args = None

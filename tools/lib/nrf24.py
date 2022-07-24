@@ -21,8 +21,8 @@ import usb, logging
 # Check pyusb dependency
 try:
   from usb import core as _usb_core
-except ImportError, ex:
-  print '''
+except ImportError as ex:
+  print ('''
 ------------------------------------------
 | PyUSB was not found or is out of date. |
 ------------------------------------------
@@ -30,7 +30,7 @@ except ImportError, ex:
 Please update PyUSB using pip:
 
 sudo pip install -U -I pip && sudo pip install -U -I pyusb
-'''
+''')
   sys.exit(1)
 
 # USB commands
@@ -65,14 +65,14 @@ class nrf24:
     try:
       self.dongle = list(usb.core.find(idVendor=0x1915, idProduct=0x0102, find_all=True))[index]
       self.dongle.set_configuration()
-    except usb.core.USBError, ex:
+    except usb.core.USBError as ex:
       raise ex
     except:
       raise Exception('Cannot find USB dongle.')
 
   # Put the radio in pseudo-promiscuous mode
   def enter_promiscuous_mode(self, prefix=[]):
-    self.send_usb_command(ENTER_PROMISCUOUS_MODE, [len(prefix)]+map(ord, prefix))
+    self.send_usb_command(ENTER_PROMISCUOUS_MODE, [len(prefix)]+list(set(map(ord, prefix))))
     self.dongle.read(0x81, 64, timeout=nrf24.usb_timeout)
     if len(prefix) > 0:
       logging.debug('Entered promiscuous mode with address prefix {0}'.
