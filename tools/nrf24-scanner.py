@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 '''
   Copyright (C) 2016 Bastille Networks
 
@@ -27,7 +27,7 @@ common.parser.add_argument('-d', '--dwell', type=float, help='Dwell time per cha
 common.parse_and_init()
 
 # Parse the prefix addresses
-prefix_address = common.args.prefix.replace(':', '').decode('hex')
+prefix_address = common.args.prefix.replace(':', '').encode().decode('hex')
 if len(prefix_address) > 5:
   raise Exception('Invalid prefix address: {0}'.format(args.address))
 
